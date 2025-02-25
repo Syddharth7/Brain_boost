@@ -1,56 +1,102 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import logo from '../assets/logo.png'
-import boy from '../assets/boy.png'
+import { useFonts, HoltwoodOneSC_400Regular } from '@expo-google-fonts/holtwood-one-sc';
+import AppLoading from 'expo-app-loading';
+import logo from '../assets/logo.png';
+import boy from '../assets/boy.png';
 
-const HomeScreen = () => {
+const SelecScreen = () => {
   const navigation = useNavigation();
 
+  let [fontsLoaded] = useFonts({
+    HoltwoodOneSC_400Regular,
+  });
+
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
+
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#E8F0FE" }}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={{ position: "absolute", top: 40, left: 20 }}>
-        <Text style={{ fontSize: 24, color: "blue" }}>←
-        </Text>
+    <View style={styles.container}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Text style={styles.backText}>←</Text>
       </TouchableOpacity>
 
-      <Image source={logo} style={{ width: 200, height: 60, resizeMode: "contain" }} />
+      <Image source={logo} style={styles.logo} />
 
-      <Text style={{ fontSize: 24, fontWeight: "bold", color: "#1E5AFF", marginVertical: 20 }}>
-        LET'S START!
-      </Text>
+      <Text style={styles.title}>LET'S START!</Text>
 
-      <Image source={boy} style={{ width: 200, height: 200, resizeMode: "contain" }} />
+      <Image source={boy} style={styles.boyImage} />
 
       <TouchableOpacity onPress={() => navigation.navigate("LessonScreen")} style={styles.button}>
-        <Text style={styles.buttonText}>📚 LESSONS</Text>
+        <Text style={styles.buttonText}>LESSONS</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Subjects")} style={styles.button}>
-        <Text style={styles.buttonText}>📘️ QUIZ</Text>
+        <Text style={styles.buttonText}>QUIZ</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Rank")} style={styles.button}>
-        <Text style={styles.buttonText}>🏆 RANK</Text>
+        <Text style={styles.buttonText}>LEADERBOARD</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#DCEAFF",
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+  },
+  backText: {
+    fontSize: 24,
+    color: "#007AFF",
+  },
+  logo: {
+    width: 200, // Increased size for better visibility
+    height: 100, // Adjusted height proportionally
+    
+    
+  },
+  title: {
+    fontSize: 28, // Slightly larger for emphasis
+    fontFamily: "HoltwoodOneSC_400Regular",
+    color: "#006BF8",
+    marginBottom: 10, // Adjusted spacing
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
+  },
+  boyImage: {
+    width: 350,
+    height: 250,
+    marginBottom:20,
+  },
   button: {
-    backgroundColor: "#1E5AFF",
+    backgroundColor: "#007AFF",
     paddingVertical: 15,
-    paddingHorizontal: 40,
+    width: 250,
     borderRadius: 30,
     marginVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
   },
   buttonText: {
     fontSize: 18,
+    fontFamily: "HoltwoodOneSC_400Regular",
     fontWeight: "bold",
     color: "white",
-    textAlign: "center",
+    letterSpacing: 1,
   },
-};
+});
 
-export default HomeScreen;
+export default SelecScreen;

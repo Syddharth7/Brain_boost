@@ -1,15 +1,24 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import girl from '../assets/girl.png'
+import { useFonts, HoltwoodOneSC_400Regular } from "@expo-google-fonts/holtwood-one-sc";
+import AppLoading from "expo-app-loading";
+import girl from "../assets/girl.png";
 
 const AdventureScreen = () => {
   const navigation = useNavigation();
 
+  let [fontsLoaded] = useFonts({
+    HoltwoodOneSC_400Regular,
+  });
+
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}></TouchableOpacity>
       <Image source={girl} style={styles.logo} />
       <Text style={styles.title}>GEAR UP FOR AN</Text>
       <Text style={styles.title}>EXCITING TLE</Text>
@@ -33,22 +42,21 @@ const styles = StyleSheet.create({
     top: 40,
     left: 20,
   },
-  backText: {
-    fontSize: 24,
-    color: "#000",
-  },
   logo: {
-    width: 200,
-    height: 200,
+    width: 400, // Increased size
+    height: 400, // Increased size
     resizeMode: "contain",
     marginBottom: 20,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#000",
+    fontSize: 24,
+    fontFamily: "HoltwoodOneSC_400Regular",
+    color: "#006BF8",
     textAlign: "center",
     marginBottom: 5,
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
   },
   button: {
     marginTop: 20,

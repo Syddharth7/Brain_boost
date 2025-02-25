@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import logo from '../assets/logo.png';
+import brainImage from '../assets/brain.png';
 
 const LessonScreen = ({ navigation }) => {
   const [unlocked, setUnlocked] = useState({
@@ -16,6 +18,7 @@ const LessonScreen = ({ navigation }) => {
   
     return unsubscribe;
   }, [navigation]);
+
   const debugStorage = async () => {
     console.log("📌 Checking AsyncStorage Keys...");
     const keys = await AsyncStorage.getAllKeys();
@@ -45,40 +48,108 @@ const LessonScreen = ({ navigation }) => {
       tourism: industrialArtsDone === 'true', // ✅ Now correctly unlocking Tourism
     });
   };
-  
 
   return (
-    <View>
-      <Text>Choose a Subject:</Text>
-      <Button title="ICT" onPress={() => navigation.navigate('ICTTopics')} />
-      <Button 
-        title="Agriculture" 
+    <ScrollView contentContainerStyle={styles.container}>
+      <Image source={logo} style={styles.logo} />
+      <Image source={brainImage} style={styles.brainImage} />
+      <Text style={styles.subHeader}>CHOOSE SUBJECT:</Text>
+      <TouchableOpacity style={styles.subjectButton} onPress={() => navigation.navigate('ICTTopics')}>
+        <Text style={styles.subjectTextBlue}>ICT</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={[styles.subjectButton, unlocked.agriculture ? styles.subjectButtonGreen : styles.disabledButton]} 
         onPress={() => unlocked.agriculture ? navigation.navigate('AgricultureTopics') : Alert.alert("Locked", "Complete ICT first!")}
         disabled={!unlocked.agriculture}
-      />
-      <Button 
-        title="Industrial Arts" 
+      >
+        <Text style={styles.subjectTextGreen}>AGRICULTURE</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={[styles.subjectButton, unlocked.industrialArts ? styles.subjectButtonRed : styles.disabledButton]} 
         onPress={() => unlocked.industrialArts ? navigation.navigate('IndustrialArtsTopics') : Alert.alert("Locked", "Complete Agriculture first!")}
         disabled={!unlocked.industrialArts}
-      />
-      <Button 
-        title="Tourism" 
+      >
+        <Text style={styles.subjectTextRed}>INDUS. ARTS</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+        style={[styles.subjectButton, unlocked.tourism ? styles.subjectButtonYellow : styles.disabledButton]} 
         onPress={() => unlocked.tourism ? navigation.navigate('TourismTopics') : Alert.alert("Locked", "Complete Industrial Arts first!")}
         disabled={!unlocked.tourism}
-      />
-
-<Button
-  title="Reset Progress"
-  onPress={async () => {
-    await AsyncStorage.clear();
-    console.log("AsyncStorage cleared!");
-    alert("Progress reset! Restart the app.");
-  }}
-  color="red"
-/>
-
-    </View>
+      >
+        <Text style={styles.subjectTextYellow}>TOURISM</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#E3ECFA',
+  },
+  logo: {
+    width: 200,
+    height: 50,
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  brainImage: {
+    width: 150,
+    height: 150,
+    resizeMode: 'contain',
+    marginBottom: 20,
+  },
+  subHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+  },
+  subjectButton: {
+    width: 250,
+    paddingVertical: 15,
+    marginVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+    borderWidth: 2,
+    backgroundColor: '#E3ECFA',
+  },
+  subjectButtonGreen: {
+    borderColor: '#4CAF50',
+  },
+  subjectButtonRed: {
+    borderColor: '#E53935',
+  },
+  subjectButtonYellow: {
+    borderColor: '#FBC02D',
+  },
+  subjectTextBlue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#006BF8',
+  },
+  subjectTextGreen: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  subjectTextRed: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#E53935',
+  },
+  subjectTextYellow: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FBC02D',
+  },
+  disabledButton: {
+    borderColor: '#aaa',
+    backgroundColor: '#ccc',
+  },
+});
 
 export default LessonScreen;
