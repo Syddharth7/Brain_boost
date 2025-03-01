@@ -1,5 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView, Image } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  Alert, 
+  StyleSheet, 
+  ScrollView, 
+  Image,
+  Animated
+} from 'react-native';
+import { Audio } from 'expo-av';
 import { getSubjects, isSubjectUnlocked } from '../services/quizService';
 import { getUser } from '../services/authService';
 import quiz from '../assets/quiz.png';
@@ -9,6 +19,11 @@ const SubjectsScreen = ({ navigation }) => {
   const [subjects, setSubjects] = useState([]);
   const [unlockedSubjects, setUnlockedSubjects] = useState([1]); // ICT unlocked by default
   const [user, setUser] = useState(null);
+  const [sound, setSound] = useState();
+  
+  // Animation values
+  const quizImageAnim = useRef(new Animated.Value(0)).current;
+  const subjectHeaderAnim = useRef(new Animated.Value(-100)).current;
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -16,7 +31,7 @@ const SubjectsScreen = ({ navigation }) => {
       if (error) Alert.alert('Error', error.message);
       else setSubjects(data);
     };
-
+    
     const fetchUser = async () => {
       const { data, error } = await getUser();
       if (data) {
@@ -24,7 +39,7 @@ const SubjectsScreen = ({ navigation }) => {
         checkUnlockedSubjects(data.user.id);
       }
     };
-
+    
     const checkUnlockedSubjects = async (userId) => {
       const unlocked = [1]; // ICT is always unlocked
       for (let i = 2; i <= 4; i++) {
@@ -33,21 +48,97 @@ const SubjectsScreen = ({ navigation }) => {
       }
       setUnlockedSubjects(unlocked);
     };
-
+    
     fetchSubjects();
     fetchUser();
+    
+    // Start animations
+    startFloatingAnimation();
+    startHeaderAnimation();
+    
+    return () => {
+      // Clean up sound
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
   }, []);
+  
+  // Separate animation functions for better readability and error handling
+  const startFloatingAnimation = () => {
+    // Simple floating animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(quizImageAnim, {
+          toValue: -10,
+          duration: 1500,
+          useNativeDriver: true
+        }),
+        Animated.timing(quizImageAnim, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: true
+        })
+      ])
+    ).start();
+  };
+
+  const startHeaderAnimation = () => {
+    // Simple slide-in animation
+    Animated.timing(subjectHeaderAnim, {
+      toValue: 0,
+      duration: 800,
+      useNativeDriver: true
+    }).start();
+  };
+  
+  // Play button sound
+  const playButtonSound = async () => {
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        require('../assets/sounds/ClickSound.mp3')
+      );
+      setSound(sound);
+      await sound.playAsync();
+    } catch (error) {
+      console.error('Error playing sound:', error);
+    }
+  };
+
+  const handleSubjectPress = (subjectId) => {
+    playButtonSound();
+    navigation.navigate('Quizzes', { subjectId });
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image source={logo} style={styles.logo} />
-      <Image source={quiz} style={styles.quizImage} />
-      <Text style={styles.subHeader}>CHOOSE SUBJECT:</Text>
+      
+      <Animated.Image 
+        source={quiz} 
+        style={[
+          styles.quizImage, 
+          { transform: [{ translateY: quizImageAnim }] }
+        ]} 
+      />
+      
+      <Animated.Text 
+        style={[
+          styles.subHeader, 
+          { transform: [{ translateX: subjectHeaderAnim }] }
+        ]}
+      >
+        CHOOSE SUBJECT:
+      </Animated.Text>
+      
       {subjects.map((subject) => (
         <TouchableOpacity
           key={subject.id}
-          style={[styles.subjectButton, !unlockedSubjects.includes(subject.id) && styles.disabledButton]}
-          onPress={() => navigation.navigate('Quizzes', { subjectId: subject.id })}
+          style={[
+            styles.subjectButton,
+            !unlockedSubjects.includes(subject.id) && styles.disabledButton,
+          ]}
+          onPress={() => handleSubjectPress(subject.id)}
           disabled={!unlockedSubjects.includes(subject.id)}
         >
           <Text style={styles.subjectText}>{subject.name}</Text>
@@ -68,12 +159,10 @@ const styles = StyleSheet.create({
   logo: {
     width: 200,
     height: 100,
-    
   },
   quizImage: {
     width: 250,
     height: 150,
-   
   },
   subHeader: {
     fontSize: 18,

@@ -26,10 +26,10 @@ const AppNavigator = () => {
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Signup" component={SignupScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Subjects" component={SubjectsScreen} options={{ title: 'Subjects' }} />
-        <Stack.Screen name="Quizzes" component={QuizzesScreen} options={{ title: 'Select Quiz' }} />
-        <Stack.Screen name="Quiz" component={QuizScreen} options={{ title: 'Quiz' }} />
-        <Stack.Screen name="Leaderboard" component={LeaderboardScreen} options={{ title: 'Leaderboard' }} />
+        <Stack.Screen name="Subjects" component={SubjectsScreen} options={{headerShown: false }} />
+        <Stack.Screen name="Quizzes" component={QuizzesScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Quiz" component={QuizScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Leaderboard" component={LeaderboardScreen} options={{ headerShown: false}} />
         <Stack.Screen name="LessonScreen" component={LessonScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ICTTopics" component={ICTTopics} options={{ headerShown: false }} />
         <Stack.Screen name="AgricultureTopics" component={AgricultureTopics} options={{ headerShown: false }} />

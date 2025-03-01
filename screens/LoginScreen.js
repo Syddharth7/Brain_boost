@@ -1,26 +1,91 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, Animated, Easing } from 'react-native';
 import { logIn } from '../services/authService';
 import boy from '../assets/boy.png'
 import logo from '../assets/logo.png'
+import { Audio } from 'expo-av';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [sound, setSound] = useState();
+  
+  // Create animated values for floating effect
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  
+  // Load sound when component mounts
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+  
+  // Start the floating animation when component mounts
+  useEffect(() => {
+    startFloatingAnimation();
+  }, []);
+  
+  // Function to create continuous floating animation
+  const startFloatingAnimation = () => {
+    Animated.loop(
+      Animated.sequence([
+        // Float up
+        Animated.timing(floatAnim, {
+          toValue: -15,  // Move up by 15 pixels
+          duration: 1500,
+          easing: Easing.sine,  // Fixed: Using direct Easing.sine instead of inOut
+          useNativeDriver: true
+        }),
+        // Float down
+        Animated.timing(floatAnim, {
+          toValue: 0,  // Back to original position
+          duration: 1500,
+          easing: Easing.sine,  // Fixed: Using direct Easing.sine instead of inOut
+          useNativeDriver: true
+        })
+      ])
+    ).start();
+  };
+
+  // Function to play button press sound
+  async function playSound() {
+    const { sound } = await Audio.Sound.createAsync(
+      require('../assets/sounds/ClickSound.mp3')
+    );
+    setSound(sound);
+    await sound.playAsync();
+  }
 
   const handleLogin = async () => {
-    const { data, error } = await logIn(email, password);
-    if (error) {
-      Alert.alert('Error', error.message);
-    } else {
-      navigation.replace('GetStarted');
-    }
+    await playSound();
+    
+    // Short delay to let sound play before proceeding with login
+    setTimeout(async () => {
+      const { data, error } = await logIn(email, password);
+      if (error) {
+        Alert.alert('Error', error.message);
+      } else {
+        navigation.replace('GetStarted');
+      }
+    }, 150);
   };
 
   return (
     <View style={styles.container}>
       <Image source={logo} style={styles.logo} />
-      <Image source={boy} style={styles.character} />
+      
+      {/* Replace static Image with Animated.Image for the boy character */}
+      <Animated.Image 
+        source={boy} 
+        style={[
+          styles.character,
+          {
+            transform: [{ translateY: floatAnim }]  // Apply vertical translation animation
+          }
+        ]} 
+      />
       
       <Text style={styles.label}>USERNAME:</Text>
       <TextInput 

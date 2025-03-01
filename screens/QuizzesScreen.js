@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Alert } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Alert, Animated, Easing } from 'react-native';
 import { getQuizzes, isQuizUnlocked } from '../services/quizService';
 import { getUser } from '../services/authService';
+import { Audio } from 'expo-av';
 import logo from '../assets/logo.png';
 import quizBanner from '../assets/quiz.png';
 import keyboardMouse from '../assets/computer.png';
@@ -11,6 +12,11 @@ const QuizzesScreen = ({ route, navigation }) => {
     const [quizzes, setQuizzes] = useState([]);
     const [unlockedQuizzes, setUnlockedQuizzes] = useState([1]); // Quiz 1 is always unlocked
     const [user, setUser] = useState(null);
+    const [sound, setSound] = useState();
+    
+    // Animation values
+    const quizBannerAnim = useRef(new Animated.Value(0)).current;
+    const footerImageAnim = useRef(new Animated.Value(0)).current;
   
     useEffect(() => {
       const fetchQuizzes = async () => {
@@ -38,27 +44,110 @@ const QuizzesScreen = ({ route, navigation }) => {
   
       fetchQuizzes();
       fetchUser();
+      
+      // Start animations
+      startFloatingAnimation();
+      
+      // Load sound
+      return () => {
+        if (sound) {
+          sound.unloadAsync();
+        }
+      };
     }, [subjectId]);
+    
+    // Function to load and play button sound
+    const playButtonSound = async () => {
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          require('../assets/buttonclick.mp3') // Make sure to add this sound file to your assets
+        );
+        setSound(sound);
+        await sound.playAsync();
+      } catch (error) {
+        console.log('Error playing sound:', error);
+      }
+    };
+    
+    // Function to create floating animation - FIXED
+    const startFloatingAnimation = () => {
+      // Create animation sequence for quiz banner
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(quizBannerAnim, {
+            toValue: 10,
+            duration: 1500,
+            easing: Easing.sin, // Fixed: Using Easing.sin instead of Easing.inOut(Easing.sine)
+            useNativeDriver: true,
+          }),
+          Animated.timing(quizBannerAnim, {
+            toValue: 0,
+            duration: 1500,
+            easing: Easing.sin, // Fixed: Using Easing.sin instead of Easing.inOut(Easing.sine)
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+      
+      // Create animation sequence for footer image with slight delay
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(footerImageAnim, {
+            toValue: 15,
+            duration: 2000,
+            easing: Easing.sin, // Fixed: Using Easing.sin instead of Easing.inOut(Easing.sine)
+            useNativeDriver: true,
+          }),
+          Animated.timing(footerImageAnim, {
+            toValue: 0,
+            duration: 2000,
+            easing: Easing.sin, // Fixed: Using Easing.sin instead of Easing.inOut(Easing.sine)
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
   
     return (
       <ScrollView contentContainerStyle={styles.container}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity 
+          onPress={() => {
+            playButtonSound();
+            navigation.goBack();
+          }} 
+          style={styles.backButton}
+        >
           <Text style={styles.backText}>{'\u2190'}</Text>
         </TouchableOpacity>
         <Image source={logo} style={styles.logo} />
         <Text style={styles.header}>QUIZZES</Text>
-        <Image source={quizBanner} style={styles.quizBanner} />
+        <Animated.Image 
+          source={quizBanner} 
+          style={[
+            styles.quizBanner, 
+            { transform: [{ translateY: quizBannerAnim }] }
+          ]} 
+        />
         {quizzes.map((quiz) => (
           <TouchableOpacity 
             key={quiz.id} 
             style={[styles.quizButton, !unlockedQuizzes.includes(quiz.id) && styles.disabledButton]} 
-            onPress={() => navigation.navigate('Quiz', { quizId: quiz.id, subjectId })} 
+            onPress={() => {
+              playButtonSound();
+              navigation.navigate('Quiz', { quizId: quiz.id, subjectId });
+            }} 
             disabled={!unlockedQuizzes.includes(quiz.id)}
           >
             <Text style={styles.quizText}>{quiz.title}</Text>
           </TouchableOpacity>
         ))}
-        <Image source={keyboardMouse} style={styles.footerImage} />
+        <Animated.Image 
+          source={keyboardMouse} 
+          style={[
+            styles.footerImage, 
+            { transform: [{ translateY: footerImageAnim }] }
+          ]} 
+        />
       </ScrollView>
     );
 };
